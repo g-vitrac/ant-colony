@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <title>ant colony</title>
+        <link rel="stylesheet" type="text/css" href="./public/css/style.css"/>
+    </head>
+    <body>
+        <main>
+            <canvas id="c"></canvas>
+            <div id="options">  
+                <button id="hide-btn" type="button">
+                    hide
+                </button> 
+                <div id="options-container">
+                    <label>
+                        fps :
+                        <output id="fps">0</output>
+                    </label>                    
+                    <label>
+                        smoke :
+                        <input id="smoke-cb" type="checkbox" checked>
+                    </label>                   
+                    <label>
+                        debug :
+                        <input id="engine-debug" type="checkbox">
+                    </label>
+                    <label>
+                        nb ants :                        
+                        <input id="ant-number" type="range" value="1000" min="1" max ="20000" oninput="this.nextElementSibling.value = this.value">
+                        <output></output>
+                    </label>
+                    <label>
+                        nb frame to test :                        
+                        <input id="frame-to-test" type="number" value="1" min="1" step="1" >
+                    </label>
+                </div>
+            </div>
+        </main>
+        <footer>            
+            <script src="./public/js/engine.js"></script>
+            <script src="./public/js/antEngine.js"></script>
+            <script src="./public/js/antRenderer.js"></script>            
+            <script src="./public/js/main.js"></script>
+        </footer>
+    </body>
+</html> 
