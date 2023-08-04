@@ -17,7 +17,6 @@ let req = null;
 
 let delta ;
 
-let callPerSecond = 0;
 
 let fpsElement = document.querySelector('#fps');
 
@@ -77,12 +76,12 @@ document.querySelector('#smoke-cb').addEventListener('change', () => {
 
 document.querySelector('#engine-debug').addEventListener('change', () => {
     if(antEngine.debug){        
-        antEngine.size[3] = 0
-        antEngine.device.queue.writeBuffer(antEngine.screenBuffer, 0, antEngine.size);
+        antEngine.additionalData[1] = 0
+        antEngine.device.queue.writeBuffer(antEngine.additionalDataBuffer, 0, antEngine.additionalData);
         req = requestAnimationFrame(main);
     }else{
-        antEngine.size[3] = 1
-        antEngine.device.queue.writeBuffer(antEngine.screenBuffer, 0, antEngine.size);
+        antEngine.additionalData[1] = 1
+        antEngine.device.queue.writeBuffer(antEngine.additionalDataBuffer, 0, antEngine.additionalData);
     }
     antEngine.debug = ! antEngine.debug    
 })

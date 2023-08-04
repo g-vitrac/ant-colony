@@ -8,14 +8,22 @@ class AntEngine extends Engine{
         this.module = this.device.createShaderModule({
             label: 'ant compute module',
             code: `
-                @group(0) @binding(0) var<storage, read_write> data: array<f32>;                
-                @group(0) @binding(1) var<uniform> screen: vec4f;          
+
+                struct antData{
+                    pos: vec2f,
+                    angle: f32,
+                    speed: f32
+                }
+
+                @group(0) @binding(0) var<storage, read_write> data: array<antData>;                
+                @group(0) @binding(1) var<uniform> screen: vec2f;          
                 @group(0) @binding(2) var<storage, read> texData: array<u32>;
                 @group(0) @binding(3) var<storage, read_write> testData: array<f32>;
+                @group(0) @binding(4) var<uniform> additionalData: vec3f;
 
                 const antDetectionLength = 35;
                 const antDetectionAngle = 10;
-                const angRotation = 10;
+                const angRotation = 100 * 0.016;
             
 
                 @compute @workgroup_size(1) fn computeSomething(
@@ -24,90 +32,55 @@ class AntEngine extends Engine{
                 ) {                                        
                     
 
-                    let bufferWidth = i32(floor(screen.x / 256) + 1) * 256;
-                    let i = id.x * 4;
-                    let rad = radians(data[i + 2]);
-                    data[i] += cos(rad) * data[i + 3] *  0.016;
-                    data[i + 1] += sin(rad) * data[i + 3] * 0.016;                
+                    let bufferWidth = i32(floor(screen.x / 128) + 1) * 128;
+                    let bufferOffset = f32(bufferWidth) - screen.x;
+
+                    let i = id.x;
+                    let rad = radians(data[i].angle);
+                    data[i].pos.x += cos(rad) * data[i].speed *  0.016;
+                    data[i].pos.y += sin(rad) * data[i].speed * 0.016;                
                                         
-                    if(data[i] < 0){
-                        data[i] = screen.x;
-                    } else if(data[i] > screen.x)
+                    if(data[i].pos.x < 0){
+                        data[i].pos.x = screen.x;
+                    } else if(data[i].pos.x > screen.x)
                     {
-                        data[i] = 0;
+                        data[i].pos.x = 0;
                     }
-                    if(data[i + 1] > f32(screen.y))
+                    if(data[i].pos.y > f32(screen.y))
                     {
-                        data[i + 1] = 0;
-                    }else if(data[i + 1] < 0)
+                        data[i].pos.y = 0;
+                    }else if(data[i].pos.y < 0)
                     {
-                        data[i + 1] = f32(screen.y);
+                        data[i].pos.y = f32(screen.y);
                     }
 
-                    var antPosition = vec2i(i32(data[i]), i32(data[i + 1]));
+                    var antPosition = vec2i(i32(data[i].pos.x), i32(data[i].pos.y));
 
-                    var lp = vec2i(antDetectionLength * vec2f(cos(radians(data[i + 2] + antDetectionAngle)), sin(radians(data[i + 2] + antDetectionAngle)))) + antPosition;                    
-                    var rp = vec2i(antDetectionLength * vec2f(cos(radians(data[i + 2] - antDetectionAngle)), sin(radians(data[i + 2] - antDetectionAngle)))) + antPosition;                    
+                    var lp = vec2i(antDetectionLength * vec2f(cos(radians(data[i].angle + antDetectionAngle)), sin(radians(data[i].angle + antDetectionAngle)))) + antPosition;                    
+                    var rp = vec2i(antDetectionLength * vec2f(cos(radians(data[i].angle - antDetectionAngle)), sin(radians(data[i].angle - antDetectionAngle)))) + antPosition;                    
 
                     lp = vec2i(max(0, lp.x - 1), i32(screen.y) - max(lp.y, 1));
                     rp = vec2i(max(0, rp.x - 1), i32(screen.y) - max(rp.y, 1));
                     
-                    var texelLeft = unpack4x8unorm (texData[(i32(screen.x) * lp.y) + (lp.y * 16) + lp.x]);
-                    var texelRight = unpack4x8unorm(texData[(i32(screen.x) * rp.y) + (rp.y * 16) + rp.x]);
-
-                    // if(texelRight.r == 1){
-                    //     data[i + 2] += 90;
-                    // }
-                    // else if(texelLeft.r == 1){
-                    //     data[i + 2] -= 90;
-                    // }
+                    var texelLeft = unpack4x8unorm(texData[(i32(screen.x) * lp.y) + (lp.y * i32(bufferOffset)) + lp.x]);
+                    var texelRight = unpack4x8unorm(texData[(i32(screen.x) * rp.y) + (rp.y * i32(bufferOffset)) + rp.x]);
 
                     if(texelRight.r != 0 && texelLeft.r <= texelRight.r)
                     {
-                        data[i + 2] -= angRotation;// / data[i + 3];                            
+                        data[i].angle -= angRotation;
                     }
                     else if(texelLeft.r != 0)
                     {
-                        data[i + 2] += angRotation;// / data[i + 3];
-                    }   
-                    
-                    // testData[i] = f32(i);
+                        data[i].angle += angRotation;
+                    }else{
+                        data[i].angle += (additionalData.z * 2 - 1) * angRotation;
+                    }                                    
                          
-                    if(screen.a == 1){
-                        testData[0] = 1;
-
-                        if(i == 0)
-                        {
-
-                            // var x = max(0, antPosition.x - 1);//i32(screen.x) - 1;
-                            // var y = i32(screen.y) - max(antPosition.y, 1);
-                           
-                            // var coord = (i32(screen.x) * y) + (y * 16) + x;
-                            // var tex = texData[coord];
-
-                            // testData[0] = unpack4x8unorm(tex).r * 255;
-                            // testData[1] = f32(coord);
-                            
-                            // testData[2] = f32(y);
-                            // testData[3] = f32(antPosition.y);
-
-                            // testData[0] = f32(bufferWidth);
-                            // testData[1] = screen.x;
-                            // testData[2] = (floor(screen.x / 256) + 1) * 256;                             
-                            //  testData[1] = texelRight.a;
-                            //  testData[0] = f32(pack4x8unorm(vec4f(vec3f(0,0,0),texelLeft.r)));
-                            //  testData[1] = f32(pack4x8unorm(vec4f(vec3f(0,0,0),texelRight.r)));
-                             testData[2] = f32(lp.x);
-                             testData[3] = f32(lp.y);
-                             testData[4] = f32(rp.x);
-                             testData[5] = f32(rp.y);
-                            //  testData[6] = f32(lp.x * i32(screen.x / 2) + lp.y);
-                            //  testData[7] = f32(rp.x * i32(screen.x / 2) + rp.y);               
-                            // var x = 0;
-                            // var y = 0;
-                            // var coord = x * screen.x / 2 + y; 
-                            // testData[0] = unpack4x8unorm (texData[coord]);
-                        }
+                    if(additionalData.y == 1){
+                        testData[0] = additionalData[0];
+                        testData[1] = screen.x;   
+                        testData[2] = f32(bufferWidth);   
+                        testData[3] = bufferOffset;                        
                     }
                 }
             `,
@@ -136,17 +109,19 @@ class AntEngine extends Engine{
             this.antArr = this.antArr.concat([
                 // 10, Math.random() * this.canvas.height , 0, 5,                
 
-                Math.random() * this.canvas.width, Math.random() * this.canvas.height , direction, 50,
+                Math.random() * this.canvas.width, Math.random() * this.canvas.height , direction, 100,
                 // this.canvas.width / 2, Math.random() * this.canvas.height, Math.random() > 0.5 ? 270 : 90, 10,
             ]);
         } 
 
-        // antArr = [
-            // 930, 420, 90, 1,
-            // // this.canvas.width / 2  - 15, this.canvas.height / 2 - 15, 90, 5,
-            // this.canvas.width / 2, this.canvas.height / 2, 0, 0,
-            // 5, 5, 0, 0
+        // this.antArr = [
+        //     // 930, 420, 90, 1,
+        //     // this.canvas.width / 2  - 15, this.canvas.height / 2 - 15, 90, 5,
+        //     // this.canvas.width / 2, this.canvas.height / 2, 0, 0,
+        //     29, 29, 0, 0
         // ]
+
+        
 
         // this.antArr = [
         //     // 5, 5, 90, 0,
@@ -196,11 +171,26 @@ class AntEngine extends Engine{
         // Copy our input data to that buffer
         this.device.queue.writeBuffer(this.workBuffer, 0, this.input);
 
-        this.size = new Float32Array([this.canvas.width, this.canvas.height, 0, antEngine.debug ? '1' : 0]);
+        this.size = new Float32Array([
+            this.canvas.width, 
+            this.canvas.height
+        ]);
+
+        this.additionalData = new Float32Array([
+            0, 
+            antEngine.debug ? '1' : 0, 
+            0
+        ]);
 
         this.screenBuffer = this.device.createBuffer({
             label: 'screen size uniform',
             size: this.size.byteLength,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+
+        this.additionalDataBuffer = this.device.createBuffer({
+            label: 'screen size uniform',
+            size: this.additionalData.byteLength,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
 
@@ -210,6 +200,7 @@ class AntEngine extends Engine{
         });
 
         this.device.queue.writeBuffer(this.screenBuffer, 0, this.size);
+        this.device.queue.writeBuffer(this.additionalDataBuffer, 0, this.additionalData);
 
         // Setup a bindGroup to tell the shader which
         // buffer to use for the computation
@@ -221,6 +212,7 @@ class AntEngine extends Engine{
             { binding: 1, resource: { buffer: this.screenBuffer } },
             { binding: 2, resource: { buffer: this.antBuffer } },
             { binding: 3, resource: { buffer: this.testBuffer } },
+            { binding: 4, resource: { buffer: this.additionalDataBuffer } },
           ],
         });
 
@@ -244,13 +236,12 @@ class AntEngine extends Engine{
         //console.log(buffer);
 
         // console.log('size : ' + delta)
-        this.size[0] = this.canvas.width;
-        this.size[1] = this.canvas.height;
-        this.size[2] = delta;
+        this.additionalData[0] = delta;
+        this.additionalData[2] = Math.random();
 
         // console.log(delta);
         // console.log(this.size)     
-        this.device.queue.writeBuffer(this.screenBuffer, 0, this.size);
+        this.device.queue.writeBuffer(this.additionalDataBuffer, 0, this.additionalData);
 
         this.encoder = this.device.createCommandEncoder();
 

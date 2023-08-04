@@ -1,5 +1,5 @@
 
-const antSize = 2 / 2;
+const antSize = 2  / 2;
 
 class AntRenderer extends Engine{
 
@@ -23,7 +23,9 @@ class AntRenderer extends Engine{
             };
             
             struct AntData{
-              pos: vec4f
+              pos: vec2f,
+              angle: f32,
+              speed: f32,              
             }
             
             struct ScreenData {
@@ -310,8 +312,7 @@ class AntRenderer extends Engine{
     pass.end();
     
     this.encoder.copyTextureToTexture({texture: this.texA}, {texture: this.texB}, {width: this.context.canvas.clientWidth, height: this.context.canvas.clientHeight});
-    
-    
+        
     this.renderPassDescriptorTexToCanvas.colorAttachments[0].view = this.texA.createView();
     pass = this.encoder.beginRenderPass(this.renderPassDescriptorTexToCanvas);    
     pass.setPipeline(this.texturePipeline);
@@ -332,7 +333,7 @@ class AntRenderer extends Engine{
 
     }else{      
       this.renderPassDescriptorToTex.colorAttachments[0].view = this.context.getCurrentTexture().createView();    
-      let pass = this.encoder.beginRenderPass(this.renderPassDescriptorToTex);      
+      let pass = this.encoder.beginRenderPass(this.renderPassDescriptorToTex);
       pass.setPipeline(this.pipeline);
       pass.setVertexBuffer(0, this.vertexBuffer);
       pass.setBindGroup(0, this.bindGroup);

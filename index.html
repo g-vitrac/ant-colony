@@ -6,12 +6,16 @@
     </head>
     <body>
         <main>
-            <canvas id="c"></canvas>
+            <canvas id="c">
+            </canvas>            
+            <div id="loader">
+                <output id="val">0</output>%
+            </div>
             <div id="options">  
                 <button id="hide-btn" type="button">
                     hide
                 </button> 
-                <div id="options-container">
+                <div id="options-container" class="d-none">
                     <label>
                         fps :
                         <output id="fps">0</output>
@@ -26,21 +30,38 @@
                     </label>
                     <label>
                         nb ants :                        
-                        <input id="ant-number" type="range" value="1000" min="1" max ="20000" oninput="this.nextElementSibling.value = this.value">
-                        <output></output>
+                        <input id="ant-number" type="range" value="10000" min="1" max ="700000" oninput="this.nextElementSibling.value = this.value">
+                        <output>10000</output>
                     </label>
                     <label>
                         nb frame to test :                        
                         <input id="frame-to-test" type="number" value="1" min="1" step="1" >
                     </label>
+                    <label>
+                        detection length                       
+                        <input id="ant-dl" class="ant-behavior" type="range" value="10" min="1" max ="500" oninput="this.nextElementSibling.value = this.value">
+                        <output>10</output>
+                    </label>
+                    <label>
+                        detection angle                       
+                        <input id="ant-da" class="ant-behavior" type="range" value="5" min="-180" max ="180" oninput="this.nextElementSibling.value = this.value">
+                        <output>5</output>
+                    </label>
+                    <label>
+                        on detection rotation
+                        <input id="ant-dr" class="ant-behavior" type="range" value="5" min="-90" max ="90" oninput="this.nextElementSibling.value = this.value">
+                        <output>5</output>
+                    </label>
+                    <label title="define when the ants escape from an over concentration of pheromone">
+                        pheromone escapre treshold                    
+                        <input id="ant-dl" class="ant-behavior" type="range" value="15" min="0" max ="100" oninput="this.nextElementSibling.value = this.value">
+                        <output>15</output>
+                    </label>
                 </div>
             </div>
         </main>
         <footer>            
-            <script src="./public/js/engine.js"></script>
-            <script src="./public/js/antEngine.js"></script>
-            <script src="./public/js/antRenderer.js"></script>            
-            <script src="./public/js/main.js"></script>
+            <script type="module" src="./public/js/refactor/main.js"></script>
         </footer>
     </body>
 </html> 
