@@ -1,0 +1,55 @@
+body{
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  
+}
+
+canvas{
+  width: calc(100vw - 2rem);
+  height: calc(100vh - 2rem);
+  background-color: black;
+  border: 1px solid white;
+}
+
+div{
+  display: flex;
+  justify-content: center;
+}
+
+#loader,#options{
+  position: fixed;  
+  background-color: lightslategray;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  padding-top: 1.5rem;
+}
+
+#loader{
+  top: 50%;
+  left: 50%;
+  padding : 2rem;
+  background-color: gray;  
+}
+
+#options{
+  display: block;
+  text-align: center;
+  top: 2rem;
+  right: 2rem;  
+}
+
+#options-container{
+  display: flex;
+  flex-direction: column;
+}
+
+.d-none{
+  display: none !important;
+}
