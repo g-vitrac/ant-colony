@@ -1,0 +1,9 @@
+services:
+    php:
+      build:
+        context: .docker/php
+        dockerfile: Dockerfile
+      volumes:
+        - "./sf:/var/www/html/sf"
+#        - "./.docker/php/php-fpm.d:/usr/local/etc/php-fpm.d"
+#        - "./.docker/php/php.conf.d:/usr/local/etc/php.conf.d"
