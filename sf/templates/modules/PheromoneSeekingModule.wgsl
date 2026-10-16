@@ -11,24 +11,19 @@ struct behaviorCoefficient{
     escapeTreshold: f32
 }
 
-@group(0) @binding(0) var<storage, read_write> data: array<antData>;                
-@group(0) @binding(1) var<uniform> screen: vec2f;          
+@group(0) @binding(0) var<storage, read_write> data: array<antData>;
+@group(0) @binding(1) var<uniform> screen: vec2f;
 @group(0) @binding(2) var tex: texture_2d<f32>;
 @group(0) @binding(3) var texSampler: sampler;
 @group(0) @binding(4) var<uniform> time: f32;
 @group(0) @binding(5) var<uniform> antBehavior: behaviorCoefficient;
 
-// const antDetectionLength = 10;
-// const antDetectionAngle = 5;
-// const angRotation = 5; //100 * 0.016;
-// const escapeTreshold = 0.15;
-
 @compute @workgroup_size(64) fn cs(
     @builtin(global_invocation_id) gid: vec3<u32>,
     @builtin(local_invocation_id) lid: vec3<u32>,
     @builtin(workgroup_id) wid: vec3<u32>,
-    @builtin(num_workgroups) nwg: vec3<u32>,     
-) {    
+    @builtin(num_workgroups) nwg: vec3<u32>,
+) {
 
     let bufferWidth = i32(floor(screen.x / 128) + 1) * 128;
     let bufferOffset = f32(bufferWidth) - screen.x;
@@ -47,11 +42,15 @@ struct behaviorCoefficient{
     var lpix = textureSampleBaseClampToEdge(tex, texSampler, lpixp);
     var rpix = textureSampleBaseClampToEdge(tex, texSampler, rpixp);
 
+
     if(rpix.a >= antBehavior.escapeTreshold)
     {
-        data[i].angle +=  hash13(vec3f(data[i].pos.x, time, data[i].pos.y)) * antBehavior.angRotation - antBehavior.angRotation / 2;
-    }else if(lpix.a >= antBehavior.escapeTreshold){
+        //data[i].angle =  hash13(vec3f(data[i].pos.x, time, data[i].pos.y)) * antBehavior.angRotation - antBehavior.angRotation / 2;
+        //data[i].angle += cos(time) * antBehavior.angRotation;
         data[i].angle -= antBehavior.angRotation;
+    }else if(lpix.a >= antBehavior.escapeTreshold){
+        //data[i].angle -=  cos(time) * antBehavior.angRotation;
+        data[i].angle += antBehavior.angRotation;
     }else if(rpix.a != 0 && lpix.a <= rpix.a)
     {
         data[i].angle -= antBehavior.angRotation;
@@ -61,10 +60,10 @@ struct behaviorCoefficient{
         data[i].angle += antBehavior.angRotation;
     }
     else{
-        data[i].angle += hash13(vec3f(data[i].pos.x, time, data[i].pos.y)) * antBehavior.angRotation - antBehavior.angRotation / 2;
+        data[i].angle +=  sin(time) * antBehavior.angRotation;
     }
 
-    
+
     // if(i == 0){
     //     data[0].angle = f32(nwg.x);
     // }

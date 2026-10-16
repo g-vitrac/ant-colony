@@ -1,15 +1,21 @@
-import { WebGPUContext } from "./WebGPUContext.js";
-import { AntMotionEngine } from "./antColony/engines/AntMotionEngine.js";
-import { AntFactory } from "./antColony/AntFactory.js";
+/*
+ * Welcome to your app's main JavaScript file!
+ *
+ * This file will be included onto the page via the importmap() Twig function,
+ * which should already be in your base.html.twig.
+ */
+import './styles/app.css';
+import {WebGPUContext} from "./js/refactor/Engine.js";
+import {AntFactory} from "./js/refactor/antColony/AntFactory.js";
+import {AntMotionEngine} from "./js/refactor/antColony/engines/AntMotionEngine.js";
 
 WebGPUContext.canvas = document.querySelector('#c');
 WebGPUContext.canvas.height = WebGPUContext.canvas.clientHeight;
 WebGPUContext.canvas.width = WebGPUContext.canvas.clientWidth;
 
-AntFactory.speed.min = 50;
+AntFactory.speed.min = 1;
 AntFactory.pos.maxX = WebGPUContext.canvas.width;
 AntFactory.pos.maxY = WebGPUContext.canvas.height;
-AntFactory.loader = document.querySelector('#loader');
 
 let callPerSecond = 0;
 
@@ -26,7 +32,7 @@ setInterval( () => {
 
 //document.querySelector('#ant-number').value
 
-//AntFactory.createRandomAnts(1);
+AntFactory.createRandomAnts(1);
 
 let ame = null;
 
@@ -40,8 +46,8 @@ function main(time)
     callPerSecond++;
 
     ame.run();
-    
-    if(req != null){// && i++ < 1000){        
+
+    if(req != null){// && i++ < 1000){
         requestAnimationFrame(main);
     }
 }
@@ -59,47 +65,47 @@ document.querySelector('#smoke-cb').addEventListener('change', () => {
 })
 
 document.querySelector('#ant-number').addEventListener('change', () => {
-    AntFactory.loader.classList.remove('d-none');
     setTimeout( () => {
         restart();
-    }, 1000)   
+    }, 1000)
 })
 
-document.querySelectorAll('.ant-behavior').forEach( i => {    
+document.querySelectorAll('.ant-behavior').forEach( i => {
     i.addEventListener('change', () => {
         let data = [];
-        document.querySelectorAll('.ant-behavior').forEach(e => data.push(e.value));        
-        data[3] = data[3] / 100;        
+        document.querySelectorAll('.ant-behavior').forEach(e => data.push(e.value));
+        data[3] = data[3] / 100;
         ame.updateAntBehavior(new Float32Array(data));
     });
 });
 
 document.addEventListener('keypress', (e) => {
 
-    if(e.key == 'r')
+    if(e.key === 'r')
         restart();
-    if(e.key == 'p' || e.code === 'Space'){
+    if(e.key === 'p' || e.code === 'Space'){
         cancelAnimationFrame(req);
-        req = req === null ? requestAnimationFrame(main) : null; 
+        req = req === null ? requestAnimationFrame(main) : null;
     }
-    if(e.key == 't'){   
-        if(antEngine.debug)     
-            req = requestAnimationFrame(main); 
+    if(e.key === 't'){
+        if(antEngine.debug)
+            req = requestAnimationFrame(main);
         i = 0;
     }
-    if(e.key == 'c'){
+    if(e.key === 'c'){
         console.clear();
         console.log(i)
     }
-    if(e.key == 'd'){
+    if(e.key === 'd'){
         document.querySelector('#engine-debug').click()
     }
-    if(e.key == 's'){
+    if(e.key === 's'){
         document.querySelector('#smoke-cb').click();
     }
 });
 
-document.addEventListener('antLoaded', async () => {    
+document.addEventListener('antLoaded', async () => {
+    console.log('---initial loading ok---');
     ame = await AntMotionEngine(AntFactory.antArr);
     req = requestAnimationFrame(main);
     let addMouse = false;
@@ -107,17 +113,17 @@ document.addEventListener('antLoaded', async () => {
     document.addEventListener('click', () => {
         addMouse = ! addMouse;
     })
-    
+
     let direction = 0;
     let lastPost = {x: 0, y: 0};
 
     document.addEventListener('mousemove', (e) => {
         direction = Math.random() * 360
-        if(addMouse){                        
+        if(addMouse){
             const addAnt = () => {
                 ame.addAnt({x: e.clientX - 32, y: WebGPUContext.canvas.height - e.clientY + 32}, direction);
             }
-            requestAnimationFrame(addAnt);          
+            requestAnimationFrame(addAnt);
         }
     })
 
@@ -126,10 +132,10 @@ document.addEventListener('antLoaded', async () => {
 
 function restart()
 {
-    req = null;     
+    req = null;
 
     i = 0;
-    
-    AntFactory.createRandomAnts(document.querySelector('#ant-number').value);    
+
+    AntFactory.createRandomAnts(document.querySelector('#ant-number').value);
 
 }

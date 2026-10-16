@@ -36,7 +36,7 @@ export const AntSeekingComputer = async function(antsBuffer, pheromoneTexture){
         label: 'screen size uniform',
         size: cs.byteLength,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-    });    
+    });
 
     let tb = device.createBuffer({
         label: 'time uniform for pseudo random generation',
@@ -44,16 +44,16 @@ export const AntSeekingComputer = async function(antsBuffer, pheromoneTexture){
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
 
-    
+
     let ab = device.createBuffer({
         label: 'ant coefficient uniform that controls their behavior',
         size: 4 * 4 * 4,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
 
-    let td = new Float32Array(1);
+    let td = new Float32Array([Date.now()]);
 
-    let abd = new Float32Array([10, 5, 5, 0.15]);
+    let abd = new Float32Array([2, 45, 0.5, -1]);
 
     device.queue.writeBuffer(sb, 0, cs);
     device.queue.writeBuffer(tb, 0, td);
@@ -93,7 +93,7 @@ export const AntSeekingComputer = async function(antsBuffer, pheromoneTexture){
                 label: 'ant seeking behaviour pass'
             });
 
-            
+
             td[0] += 1;
             device.queue.writeBuffer(tb, 0, td);
             // console.log(td[0])
@@ -103,8 +103,8 @@ export const AntSeekingComputer = async function(antsBuffer, pheromoneTexture){
             pass.setBindGroup(0, bg);
             let nbInvocation = Math.ceil(wb.size / 16);
             pass.dispatchWorkgroups((nbInvocation / 64) + 1);
-            pass.end();         
-            
+            pass.end();
+
             device.queue.submit([encoder.finish()]);
         },
         setWorkingBuffer: (buffer) => {

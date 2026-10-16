@@ -5,11 +5,11 @@ export const AntFactory = (() => {
     const createRandomAnt = () => {
         return {
             pos: {
-                x: Math.random() * (AntFactory.pos.maxX - AntFactory.pos.minX) + AntFactory.pos.minX, 
+                x: Math.random() * (AntFactory.pos.maxX - AntFactory.pos.minX) + AntFactory.pos.minX,
                 y: Math.random() * (AntFactory.pos.maxY - AntFactory.pos.minX) + AntFactory.pos.minY
             },
-            angle: Math.random() * (AntFactory.direction.max - AntFactory.direction.min) + AntFactory.direction.min, 
-            speed: 100//Math.random() * (AntFactory.speed.max - AntFactory.speed.min) + AntFactory.speed.min, 
+            angle: Math.random() * (AntFactory.direction.max - AntFactory.direction.min) + AntFactory.direction.min,
+            speed: 25//Math.random() * (AntFactory.speed.max - AntFactory.speed.min) + AntFactory.speed.min,
         }
     }
 
@@ -29,19 +29,14 @@ export const AntFactory = (() => {
             for(let i = 0; i < nbAnts; i++)
             {
                 AntFactory.antArr = AntFactory.antArr.concat(createTestAnt());
-            }            
-            loader.dispatchEvent(new CustomEvent('antLoaded', {bubbles: true}));
-            loader.classList.add('d-none');
+            }
         },
         createRandomAnts: (nbAnts) => {
             AntFactory.antArr = new Float32Array(nbAnts * 4);
             console.log(AntFactory.antArr)
-            loader.classList.remove('d-none');
-            let spanLoader = loader.querySelector('output');
             let i = 0;
-            spanLoader.value = 0;            
-            let intervalId = setInterval( () => {                
-                
+            let intervalId = setInterval( () => {
+
                 for(let j = 0; j < nbAnts; j++)
                 {
                    let ant = createSquaredAnt();
@@ -55,19 +50,17 @@ export const AntFactory = (() => {
 
                 // console.log(AntFactory.antArr)
 
-                if(i >= nbAnts){                    
-                    loader.dispatchEvent(new CustomEvent('antLoaded', {bubbles: true}));
-                    loader.classList.add('d-none');
-                    
+                if(i >= nbAnts){
+                    document.dispatchEvent(new CustomEvent('antLoaded', {bubbles: true}));
+
                     clearInterval(intervalId)
                 }
-                spanLoader.value = Math.floor((i) / nbAnts * 100);
-            })            
+                // spanLoader.value = Math.floor((i) / nbAnts * 100);
+            })
         },
-        speed: {min: 0, max: 10},
+        speed: {min: 1, max: 2},
         direction: {min: 0, max: 360},
         pos: {minX: 0, maxX: 0, minY: 0, maxY: 0},
-        loader: null,
         antArr: null
     }
 })();
